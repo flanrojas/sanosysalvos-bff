@@ -26,11 +26,19 @@ public class BffConfig {
     }
 
     @Bean
+    GroupedOpenApi mascotasApi() {
+        return GroupedOpenApi.builder()
+                .group("ms-mascotas")
+                .pathsToMatch("/ms-mascotas/**")
+                .build();
+    }
+
+    @Bean
     OpenAPI bffOpenApi() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("BFF MS Publicacion API")
-                        .description("BFF REST para consumir el microservicio de publicaciones de mascotas")
+                        .title("BFF Sanos y Salvos API")
+                        .description("BFF REST para consumir los microservicios de publicaciones y mascotas")
                         .version("1.0.0")
                         .contact(new Contact().name("Sanos y Salvos")))
                 .addServersItem(new Server()
