@@ -1,223 +1,100 @@
 package com.sanosysalvos.bff.service;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
-public class PublicacionService {
+public class PublicacionService extends BaseBffService {
 
     private static final String PUBLICACIONES_PATH = "/publicaciones";
+    private static final String PETS_PATH = "/api/v1/pets";
 
-    private final RestTemplate restTemplate;
     private final String baseUrl;
+    private final String mascotasBaseUrl;
 
     public PublicacionService(RestTemplate restTemplate,
-                              @Value("${ms.publicacion.base-url}") String baseUrl) {
-        this.restTemplate = restTemplate;
+                              @Value("${ms.publicacion.base-url}") String baseUrl,
+                              @Value("${ms.mascotas.base-url}") String mascotasBaseUrl) {
+        super(restTemplate);
         this.baseUrl = baseUrl;
+        this.mascotasBaseUrl = mascotasBaseUrl;
     }
 
     public ResponseEntity<String> getAll() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    baseUrl + PUBLICACIONES_PATH,
-                    HttpMethod.GET,
-                    requestEntity,
-                    String.class
-            );
-
-            HttpHeaders responseHeaders = new HttpHeaders();
-            if (response.getHeaders().getContentType() != null) {
-                responseHeaders.setContentType(response.getHeaders().getContentType());
-            } else {
-                responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            }
-
-            return ResponseEntity.status(response.getStatusCode())
-                    .headers(responseHeaders)
-                    .body(response.getBody());
-        } catch (HttpStatusCodeException ex) {
-            HttpHeaders responseHeaders = new HttpHeaders();
-            if (ex.getResponseHeaders() != null && ex.getResponseHeaders().getContentType() != null) {
-                responseHeaders.setContentType(ex.getResponseHeaders().getContentType());
-            } else {
-                responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            }
-
-            return ResponseEntity.status(ex.getStatusCode())
-                    .headers(responseHeaders)
-                    .body(ex.getResponseBodyAsString());
-        }
+        return exchangeString(baseUrl + PUBLICACIONES_PATH, HttpMethod.GET, new HttpEntity<>(headers()));
     }
 
     public ResponseEntity<String> getById(String id) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    baseUrl + PUBLICACIONES_PATH + "/" + id,
-                    HttpMethod.GET,
-                    requestEntity,
-                    String.class
-            );
-
-            HttpHeaders responseHeaders = new HttpHeaders();
-            if (response.getHeaders().getContentType() != null) {
-                responseHeaders.setContentType(response.getHeaders().getContentType());
-            } else {
-                responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            }
-
-            return ResponseEntity.status(response.getStatusCode())
-                    .headers(responseHeaders)
-                    .body(response.getBody());
-        } catch (HttpStatusCodeException ex) {
-            HttpHeaders responseHeaders = new HttpHeaders();
-            if (ex.getResponseHeaders() != null && ex.getResponseHeaders().getContentType() != null) {
-                responseHeaders.setContentType(ex.getResponseHeaders().getContentType());
-            } else {
-                responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            }
-
-            return ResponseEntity.status(ex.getStatusCode())
-                    .headers(responseHeaders)
-                    .body(ex.getResponseBodyAsString());
-        }
+        return exchangeString(baseUrl + PUBLICACIONES_PATH + "/" + id, HttpMethod.GET, new HttpEntity<>(headers()));
     }
 
     public ResponseEntity<String> create(Map<String, Object> request) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(request, headers);
-
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    baseUrl + PUBLICACIONES_PATH,
-                    HttpMethod.POST,
-                    requestEntity,
-                    String.class
-            );
-
-            HttpHeaders responseHeaders = new HttpHeaders();
-            if (response.getHeaders().getContentType() != null) {
-                responseHeaders.setContentType(response.getHeaders().getContentType());
-            } else {
-                responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            }
-
-            return ResponseEntity.status(response.getStatusCode())
-                    .headers(responseHeaders)
-                    .body(response.getBody());
-        } catch (HttpStatusCodeException ex) {
-            HttpHeaders responseHeaders = new HttpHeaders();
-            if (ex.getResponseHeaders() != null && ex.getResponseHeaders().getContentType() != null) {
-                responseHeaders.setContentType(ex.getResponseHeaders().getContentType());
-            } else {
-                responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            }
-
-            return ResponseEntity.status(ex.getStatusCode())
-                    .headers(responseHeaders)
-                    .body(ex.getResponseBodyAsString());
-        }
+        return exchangeString(baseUrl + PUBLICACIONES_PATH, HttpMethod.POST, new HttpEntity<>(request, headers()));
     }
 
     public ResponseEntity<String> update(String id, Map<String, Object> request) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(request, headers);
-
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    baseUrl + PUBLICACIONES_PATH + "/" + id,
-                    HttpMethod.PUT,
-                    requestEntity,
-                    String.class
-            );
-
-            HttpHeaders responseHeaders = new HttpHeaders();
-            if (response.getHeaders().getContentType() != null) {
-                responseHeaders.setContentType(response.getHeaders().getContentType());
-            } else {
-                responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            }
-
-            return ResponseEntity.status(response.getStatusCode())
-                    .headers(responseHeaders)
-                    .body(response.getBody());
-        } catch (HttpStatusCodeException ex) {
-            HttpHeaders responseHeaders = new HttpHeaders();
-            if (ex.getResponseHeaders() != null && ex.getResponseHeaders().getContentType() != null) {
-                responseHeaders.setContentType(ex.getResponseHeaders().getContentType());
-            } else {
-                responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            }
-
-            return ResponseEntity.status(ex.getStatusCode())
-                    .headers(responseHeaders)
-                    .body(ex.getResponseBodyAsString());
-        }
+        return exchangeString(baseUrl + PUBLICACIONES_PATH + "/" + id, HttpMethod.PUT, new HttpEntity<>(request, headers()));
     }
 
     public ResponseEntity<String> delete(String id) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        return exchangeString(baseUrl + PUBLICACIONES_PATH + "/" + id, HttpMethod.DELETE, new HttpEntity<>(headers()));
+    }
 
-        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+    public ResponseEntity<Map<String, Object>> getPublicacionDetallada(String idPublicacion) {
+        ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
 
         try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    baseUrl + PUBLICACIONES_PATH + "/" + id,
-                    HttpMethod.DELETE,
-                    requestEntity,
-                    String.class
+            ResponseEntity<Map<String, Object>> pubResponse = restTemplate.exchange(
+                    baseUrl + PUBLICACIONES_PATH + "/" + idPublicacion,
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers()),
+                    responseType
             );
 
-            HttpHeaders responseHeaders = new HttpHeaders();
-            if (response.getHeaders().getContentType() != null) {
-                responseHeaders.setContentType(response.getHeaders().getContentType());
-            } else {
-                responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+            Map<String, Object> publicacion = pubResponse.getBody();
+            if (publicacion == null) {
+                return ResponseEntity.notFound().build();
             }
 
-            return ResponseEntity.status(response.getStatusCode())
-                    .headers(responseHeaders)
-                    .body(response.getBody());
+            String mascotaId = (String) publicacion.get("mascotaId");
+            Map<String, Object> mascota = new HashMap<>();
+
+            if (mascotaId != null) {
+                try {
+                    ResponseEntity<Map<String, Object>> petResponse = restTemplate.exchange(
+                            mascotasBaseUrl + PETS_PATH + "/" + mascotaId,
+                            HttpMethod.GET,
+                            new HttpEntity<>(headers()),
+                            responseType
+                    );
+                    if (petResponse.getBody() != null) {
+                        mascota = petResponse.getBody();
+                    }
+                } catch (HttpStatusCodeException ex) {
+                    mascota.put("error", "Mascota no encontrada o inaccesible");
+                }
+            }
+
+            Map<String, Object> respuestaUnificada = new HashMap<>();
+            respuestaUnificada.put("publicacion", publicacion);
+            respuestaUnificada.put("mascota", mascota);
+
+            return ResponseEntity.ok(respuestaUnificada);
+
         } catch (HttpStatusCodeException ex) {
-            HttpHeaders responseHeaders = new HttpHeaders();
-            if (ex.getResponseHeaders() != null && ex.getResponseHeaders().getContentType() != null) {
-                responseHeaders.setContentType(ex.getResponseHeaders().getContentType());
-            } else {
-                responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            }
-
-            return ResponseEntity.status(ex.getStatusCode())
-                    .headers(responseHeaders)
-                    .body(ex.getResponseBodyAsString());
+            return ResponseEntity.status(ex.getStatusCode()).build();
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

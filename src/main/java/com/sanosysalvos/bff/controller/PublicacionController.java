@@ -65,6 +65,32 @@ public class PublicacionController {
         return publicacionService.getById(id);
     }
 
+    @GetMapping(value = "/publicaciones/{id}/detalle", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Obtener detalle completo de la publicación", description = "Obtiene la publicación y automáticamente busca y adjunta los datos de la mascota desde el microservicio de mascotas")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Detalle obtenido correctamente",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "object"),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "publicacion": {
+                                        "idPublicacion": "8f937f90-c8f5-4e1c-8be2-2df23b24bd6a",
+                                        "tipoPublicacion": "PERDIDA",
+                                        "titulo": "Se busca perro mestizo en Providencia"
+                                      },
+                                      "mascota": {
+                                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                                        "name": "Firulais",
+                                        "species": "Perro"
+                                      }
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "404", description = "Publicación no encontrada")
+    })
+    public ResponseEntity<Map<String, Object>> getDetalleCompleto(@PathVariable String id) {
+        return publicacionService.getPublicacionDetallada(id);
+    }
+
     @PostMapping(value = "/publicaciones", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Crear publicacion", description = "Crea una nueva publicacion en el microservicio")
     @ApiResponses({

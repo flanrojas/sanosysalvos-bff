@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.sanosysalvos.bff.service.PublicacionService;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -36,11 +37,11 @@ class PublicacionControllerTest {
     @Test
     void getAllDelegatesToService() throws Exception {
         when(publicacionService.getAll())
-                .thenReturn(ResponseEntity.ok("[{\"idPublicacion\":\"" + PUBLICACION_ID + "\"}]"));
+                .thenReturn(ResponseEntity.ok("[{\"idPublicacion\":\"%s\"}]".formatted(PUBLICACION_ID)));
 
         mockMvc.perform(get("/ms-publicacion/publicaciones"))
                 .andExpect(status().isOk())
-                .andExpect(content().json("[{\"idPublicacion\":\"" + PUBLICACION_ID + "\"}]"));
+                .andExpect(content().json("[{\"idPublicacion\":\"%s\"}]".formatted(PUBLICACION_ID)));
 
         verify(publicacionService).getAll();
     }
@@ -48,20 +49,48 @@ class PublicacionControllerTest {
     @Test
     void getByIdDelegatesToService() throws Exception {
         when(publicacionService.getById(PUBLICACION_ID))
-                .thenReturn(ResponseEntity.ok("{\"idPublicacion\":\"" + PUBLICACION_ID + "\"}"));
+                .thenReturn(ResponseEntity.ok("{\"idPublicacion\":\"%s\"}".formatted(PUBLICACION_ID)));
 
         mockMvc.perform(get("/ms-publicacion/publicaciones/{id}", PUBLICACION_ID))
                 .andExpect(status().isOk())
-                .andExpect(content().json("{\"idPublicacion\":\"" + PUBLICACION_ID + "\"}"));
+                .andExpect(content().json("{\"idPublicacion\":\"%s\"}".formatted(PUBLICACION_ID)));
 
         verify(publicacionService).getById(PUBLICACION_ID);
+    }
+
+    @Test
+    void getDetalleCompletoDelegatesToService() throws Exception {
+        Map<String, Object> mockResponse = Map.of(
+                "publicacion", Map.of("idPublicacion", PUBLICACION_ID, "titulo", "Perro perdido"),
+                "mascota", Map.of("name", "Firulais", "species", "Perro")
+        );
+
+        when(publicacionService.getPublicacionDetallada(PUBLICACION_ID))
+                .thenReturn(ResponseEntity.ok(mockResponse));
+
+        mockMvc.perform(get("/ms-publicacion/publicaciones/{id}/detalle", PUBLICACION_ID))
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        {
+                          "publicacion": {
+                            "idPublicacion": "%s",
+                            "titulo": "Perro perdido"
+                          },
+                          "mascota": {
+                            "name": "Firulais",
+                            "species": "Perro"
+                          }
+                        }
+                        """.formatted(PUBLICACION_ID)));
+
+        verify(publicacionService).getPublicacionDetallada(PUBLICACION_ID);
     }
 
     @Test
     void createDelegatesBodyToService() throws Exception {
         when(publicacionService.create(anyMap()))
                 .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
-                        .body("{\"idPublicacion\":\"" + PUBLICACION_ID + "\"}"));
+                        .body("{\"idPublicacion\":\"%s\"}".formatted(PUBLICACION_ID)));
 
         mockMvc.perform(post("/ms-publicacion/publicaciones")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -73,7 +102,7 @@ class PublicacionControllerTest {
                                 }
                                 """))
                 .andExpect(status().isCreated())
-                .andExpect(content().json("{\"idPublicacion\":\"" + PUBLICACION_ID + "\"}"));
+                .andExpect(content().json("{\"idPublicacion\":\"%s\"}".formatted(PUBLICACION_ID)));
 
         verify(publicacionService).create(anyMap());
     }
@@ -81,7 +110,7 @@ class PublicacionControllerTest {
     @Test
     void updateDelegatesIdAndBodyToService() throws Exception {
         when(publicacionService.update(eq(PUBLICACION_ID), anyMap()))
-                .thenReturn(ResponseEntity.ok("{\"idPublicacion\":\"" + PUBLICACION_ID + "\",\"tipoPublicacion\":\"ENCONTRADA\"}"));
+                .thenReturn(ResponseEntity.ok("{\"idPublicacion\":\"%s\",\"tipoPublicacion\":\"ENCONTRADA\"}".formatted(PUBLICACION_ID)));
 
         mockMvc.perform(put("/ms-publicacion/publicaciones/{id}", PUBLICACION_ID)
                         .contentType(MediaType.APPLICATION_JSON)
