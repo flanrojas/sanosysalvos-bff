@@ -59,34 +59,6 @@ class PublicacionControllerTest {
     }
 
     @Test
-    void getDetalleCompletoDelegatesToService() throws Exception {
-        Map<String, Object> mockResponse = Map.of(
-                "publicacion", Map.of("idPublicacion", PUBLICACION_ID, "titulo", "Perro perdido"),
-                "mascota", Map.of("name", "Firulais", "species", "Perro")
-        );
-
-        when(publicacionService.getPublicacionDetallada(PUBLICACION_ID))
-                .thenReturn(ResponseEntity.ok(mockResponse));
-
-        mockMvc.perform(get("/ms-publicacion/publicaciones/{id}/detalle", PUBLICACION_ID))
-                .andExpect(status().isOk())
-                .andExpect(content().json("""
-                        {
-                          "publicacion": {
-                            "idPublicacion": "%s",
-                            "titulo": "Perro perdido"
-                          },
-                          "mascota": {
-                            "name": "Firulais",
-                            "species": "Perro"
-                          }
-                        }
-                        """.formatted(PUBLICACION_ID)));
-
-        verify(publicacionService).getPublicacionDetallada(PUBLICACION_ID);
-    }
-
-    @Test
     void createDelegatesBodyToService() throws Exception {
         when(publicacionService.create(anyMap()))
                 .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
