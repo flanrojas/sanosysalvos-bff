@@ -11,6 +11,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -20,8 +21,8 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
 class MascotasServiceTest {
-
-    private static final String BASE_URL = "http://localhost:8090";
+    @Value("${ms.publicacion.base-url}")
+    private static final String BASE_URL = "";
     private static final String PET_ID = "550e8400-e29b-41d4-a716-446655440000";
     private static final String OWNER_ID = "2df6d4ba-ef5e-4ad3-a148-ecb48ff8f933";
 

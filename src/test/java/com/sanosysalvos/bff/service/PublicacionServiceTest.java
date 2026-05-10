@@ -11,6 +11,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -21,8 +22,12 @@ import org.springframework.web.client.RestTemplate;
 
 class PublicacionServiceTest {
 
+    @Value("${ms.mascotas.base-url}")
     private static final String BASE_URL = "http://localhost:8081";
+    @Value("${ms.mascotas.base-url}")
+    private static final String MASCOTAS_BASE_URL = "http://localhost:8090";
     private static final String PUBLICACION_ID = "8f937f90-c8f5-4e1c-8be2-2df23b24bd6a";
+    private static final String MASCOTA_ID = "550e8400-e29b-41d4-a716-446655440000";
 
     private MockRestServiceServer server;
     private PublicacionService service;
@@ -31,7 +36,7 @@ class PublicacionServiceTest {
     void setUp() {
         RestTemplate restTemplate = new RestTemplate();
         server = MockRestServiceServer.bindTo(restTemplate).build();
-        service = new PublicacionService(restTemplate, BASE_URL);
+        service = new PublicacionService(restTemplate, BASE_URL, MASCOTAS_BASE_URL);
     }
 
     @Test
@@ -153,6 +158,67 @@ class PublicacionServiceTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody()).contains("Publicacion no encontrada");
+        server.verify();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void getPublicacionDetalladaReturnsUnifiedData() {
+        server.expect(requestTo(BASE_URL + "/publicaciones/" + PUBLICACION_ID))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess("{\"idPublicacion\":\"" + PUBLICACION_ID + "\", \"mascotaId\":\"" + MASCOTA_ID + "\"}", MediaType.APPLICATION_JSON));
+
+        server.expect(requestTo(MASCOTAS_BASE_URL + "/api/v1/pets/" + MASCOTA_ID))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess("{\"id\":\"" + MASCOTA_ID + "\", \"name\":\"Firulais\"}", MediaType.APPLICATION_JSON));
+
+        ResponseEntity<Map<String, Object>> response = service.getPublicacionDetallada(PUBLICACION_ID);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).containsKey("publicacion");
+        assertThat(response.getBody()).containsKey("mascota");
+
+        Map<String, Object> publicacion = (Map<String, Object>) response.getBody().get("publicacion");
+        assertThat(publicacion.get("idPublicacion")).isEqualTo(PUBLICACION_ID);
+
+        Map<String, Object> mascota = (Map<String, Object>) response.getBody().get("mascota");
+        assertThat(mascota.get("name")).isEqualTo("Firulais");
+
+        server.verify();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void getPublicacionDetalladaHandlesMascotaNotFoundGracefully() {
+        server.expect(requestTo(BASE_URL + "/publicaciones/" + PUBLICACION_ID))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess("{\"idPublicacion\":\"" + PUBLICACION_ID + "\", \"mascotaId\":\"" + MASCOTA_ID + "\"}", MediaType.APPLICATION_JSON));
+
+        server.expect(requestTo(MASCOTAS_BASE_URL + "/api/v1/pets/" + MASCOTA_ID))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+        ResponseEntity<Map<String, Object>> response = service.getPublicacionDetallada(PUBLICACION_ID);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+
+        Map<String, Object> mascota = (Map<String, Object>) response.getBody().get("mascota");
+        assertThat(mascota.get("error")).isEqualTo("Mascota no encontrada o inaccesible");
+
+        server.verify();
+    }
+
+    @Test
+    void getPublicacionDetalladaReturns404WhenPublicacionNotFound() {
+        server.expect(requestTo(BASE_URL + "/publicaciones/" + PUBLICACION_ID))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+        ResponseEntity<Map<String, Object>> response = service.getPublicacionDetallada(PUBLICACION_ID);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         server.verify();
     }
 }

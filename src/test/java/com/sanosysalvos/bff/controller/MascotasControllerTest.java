@@ -41,13 +41,13 @@ class MascotasControllerTest {
     @Test
     void getAllDelegatesWithValidFilters() throws Exception {
         when(mascotasService.getAll(OWNER_ID, "LOST"))
-                .thenReturn(ResponseEntity.ok("[{\"id\":\"" + PET_ID + "\"}]"));
+                .thenReturn(ResponseEntity.ok("[{\"id\":\"%s\"}]".formatted(PET_ID)));
 
         mockMvc.perform(get("/ms-mascotas/pets")
                         .param("ownerId", OWNER_ID)
                         .param("status", "LOST"))
                 .andExpect(status().isOk())
-                .andExpect(content().json("[{\"id\":\"" + PET_ID + "\"}]"));
+                .andExpect(content().json("[{\"id\":\"%s\"}]".formatted(PET_ID)));
 
         verify(mascotasService).getAll(OWNER_ID, "LOST");
     }
@@ -82,7 +82,7 @@ class MascotasControllerTest {
     @Test
     void createDelegatesWhenBodyIsValid() throws Exception {
         when(mascotasService.create(anyMap()))
-                .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body("{\"id\":\"" + PET_ID + "\"}"));
+                .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body("{\"id\":\"%s\"}".formatted(PET_ID)));
 
         mockMvc.perform(post("/ms-mascotas/pets")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -93,11 +93,11 @@ class MascotasControllerTest {
                                   "species": "Perro",
                                   "color": "Cafe",
                                   "size": 15.5,
-                                  "ownerId": "2df6d4ba-ef5e-4ad3-a148-ecb48ff8f933"
+                                  "ownerId": "%s"
                                 }
-                                """))
+                                """.formatted(OWNER_ID)))
                 .andExpect(status().isCreated())
-                .andExpect(content().json("{\"id\":\"" + PET_ID + "\"}"));
+                .andExpect(content().json("{\"id\":\"%s\"}".formatted(PET_ID)));
 
         verify(mascotasService).create(anyMap());
     }
@@ -134,7 +134,7 @@ class MascotasControllerTest {
     @Test
     void patchAllowsPartialBodyWithoutStatus() throws Exception {
         when(mascotasService.patch(eq(PET_ID), anyMap()))
-                .thenReturn(ResponseEntity.ok("{\"id\":\"" + PET_ID + "\",\"foundLocation\":\"Plaza de Armas\"}"));
+                .thenReturn(ResponseEntity.ok("{\"id\":\"%s\",\"foundLocation\":\"Plaza de Armas\"}".formatted(PET_ID)));
 
         mockMvc.perform(patch("/ms-mascotas/pets/{id}", PET_ID)
                         .contentType(MediaType.APPLICATION_JSON)
