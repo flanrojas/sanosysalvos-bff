@@ -7,15 +7,9 @@ import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class BffConfig {
-
-    @Bean
-    RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
+public class OpenApiConfig {
 
     @Bean
     GroupedOpenApi publicacionApi() {
