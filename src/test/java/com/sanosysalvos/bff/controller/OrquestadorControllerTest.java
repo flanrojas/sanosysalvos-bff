@@ -1,81 +1,159 @@
 package com.sanosysalvos.bff.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sanosysalvos.bff.dto.request.ReporteCompletoRequest;
+import com.sanosysalvos.bff.dto.response.MascotaResponse;
+import com.sanosysalvos.bff.dto.response.PublicacionDetalladaResponse;
+import com.sanosysalvos.bff.dto.response.PublicacionResponse;
+import com.sanosysalvos.bff.dto.response.ReporteCompletoResponse;
+import com.sanosysalvos.bff.service.OrquestadorService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.sanosysalvos.bff.dto.ReporteCompletoDTO;
-import com.sanosysalvos.bff.service.OrquestadorService;
-import java.util.Map;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
+@WebMvcTest(OrquestadorController.class)
 class OrquestadorControllerTest {
 
-    private static final String PUBLICACION_ID = "8f937f90-c8f5-4e1c-8be2-2df23b24bd6a";
-
-    private OrquestadorService orquestadorService;
+    @Autowired
     private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() {
-        orquestadorService = org.mockito.Mockito.mock(OrquestadorService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new OrquestadorController(orquestadorService)).build();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @MockitoBean
+    private OrquestadorService orquestadorService;
+
+    @Test
+    void crearReporteCompleto_CuandoRequestValido_DebeRetornar201() throws Exception {
+
+        ReporteCompletoRequest request = new ReporteCompletoRequest(
+                "Perrito",
+                "Fido",
+                "Perro",
+                "Negro",
+                10.0,
+                "perdido",
+                "Centro",
+                "2026-06-11",
+                "Des",
+                "Juan",
+                "123",
+                UUID.randomUUID().toString(),
+                0.0,
+                0.0
+        );
+
+        ReporteCompletoResponse response = new ReporteCompletoResponse(
+                "Éxito",
+                new MascotaResponse(
+                        UUID.randomUUID(),
+                        "Fido",
+                        "LOST",
+                        "Perro",
+                        "Negro",
+                        10.0,
+                        null,
+                        null,
+                        null,
+                        UUID.randomUUID(),
+                        LocalDateTime.now()
+                ),
+                new PublicacionResponse(
+                        UUID.randomUUID(),
+                        "PERDIDA",
+                        "Perrito",
+                        "Des",
+                        LocalDateTime.now(),
+                        "2026",
+                        "ACTIVA",
+                        0.0,
+                        0.0,
+                        "Centro",
+                        null,
+                        "Juan",
+                        "123",
+                        null,
+                        UUID.randomUUID(),
+                        UUID.randomUUID()
+                )
+        );
+
+        when(orquestadorService.crearReporteCompleto(any()))
+                .thenReturn(response);
+
+        mockMvc.perform(
+                        post("/bff/orquestador/publicaciones/completo")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isCreated())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.mensaje").value("Éxito"))
+                .andExpect(jsonPath("$.mascota.name").value("Fido"));
     }
 
     @Test
-    void crearReporteCompletoDelegatesToService() throws Exception {
-        when(orquestadorService.crearReporteCompleto(any(ReporteCompletoDTO.class)))
-                .thenReturn(Map.of("mensaje", "Reporte creado y orquestado con éxito"));
+    void getPublicacionDetallada_CuandoExiste_DebeRetornar200() throws Exception {
 
-        mockMvc.perform(post("/bff/orquestador/publicaciones/completo")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "titulo": "Gato perdido",
-                                  "nombre": "Michi",
-                                  "estado": "perdido"
-                                }
-                                """))
+        UUID id = UUID.randomUUID();
+
+        PublicacionDetalladaResponse response =
+                new PublicacionDetalladaResponse(
+                        new PublicacionResponse(
+                                id,
+                                "PERDIDA",
+                                "Perrito",
+                                "Descripción",
+                                LocalDateTime.now(),
+                                "2026",
+                                "ACTIVA",
+                                -33.45,
+                                -70.66,
+                                "Centro",
+                                null,
+                                "Juan",
+                                "123",
+                                null,
+                                UUID.randomUUID(),
+                                UUID.randomUUID()
+                        ),
+                        new MascotaResponse(
+                                UUID.randomUUID(),
+                                "Fido",
+                                "LOST",
+                                "Perro",
+                                "Negro",
+                                10.0,
+                                null,
+                                null,
+                                null,
+                                UUID.randomUUID(),
+                                LocalDateTime.now()
+                        )
+                );
+
+        when(orquestadorService.getPublicacionDetallada(id))
+                .thenReturn(response);
+
+        mockMvc.perform(
+                        get("/bff/orquestador/publicaciones/{id}/detalle", id)
+                )
                 .andExpect(status().isOk())
-                .andExpect(content().json("""
-                        {
-                          "mensaje": "Reporte creado y orquestado con éxito"
-                        }
-                        """));
-
-        verify(orquestadorService).crearReporteCompleto(any(ReporteCompletoDTO.class));
-    }
-
-    @Test
-    void getPublicacionDetalladaDelegatesToService() throws Exception {
-        when(orquestadorService.getPublicacionDetallada(PUBLICACION_ID))
-                .thenReturn(ResponseEntity.ok(Map.of(
-                        "publicacion", Map.of("idPublicacion", PUBLICACION_ID),
-                        "mascota", Map.of("name", "Michi")
-                )));
-
-        mockMvc.perform(get("/bff/orquestador/publicaciones/{id}/detalle", PUBLICACION_ID))
-                .andExpect(status().isOk())
-                .andExpect(content().json("""
-                        {
-                          "publicacion": {
-                            "idPublicacion": "%s"
-                          },
-                          "mascota": {
-                            "name": "Michi"
-                          }
-                        }
-                        """.formatted(PUBLICACION_ID)));
-
-        verify(orquestadorService).getPublicacionDetallada(PUBLICACION_ID);
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.publicacion.idPublicacion")
+                        .value(id.toString()))
+                .andExpect(jsonPath("$.mascota.name")
+                        .value("Fido"));
     }
 }

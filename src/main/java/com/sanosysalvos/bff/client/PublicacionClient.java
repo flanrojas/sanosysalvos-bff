@@ -4,10 +4,8 @@ import com.sanosysalvos.bff.dto.request.PublicacionRequest;
 import com.sanosysalvos.bff.dto.response.PublicacionResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,41 +13,51 @@ import java.util.UUID;
 @Component
 public class PublicacionClient {
 
-    private final RestTemplate restTemplate;
-    private final String baseUrl;
+    private final RestClient restClient;
 
-    public PublicacionClient(RestTemplate restTemplate, @Value("${ms.publicacion.base-url}") String baseUrl) {
-        this.restTemplate = restTemplate;
-        this.baseUrl = baseUrl;
+    public PublicacionClient(
+            RestClient.Builder builder,
+            @Value("${ms.publicacion.base-url}") String baseUrl) {
+
+        this.restClient = builder
+                .baseUrl(baseUrl)
+                .build();
     }
 
     public List<PublicacionResponse> getAll() {
-        return restTemplate.exchange(
-                baseUrl + "/publicaciones",
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<List<PublicacionResponse>>() {}
-        ).getBody();
+        return restClient.get()
+                .uri("/publicaciones")
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
     }
 
     public PublicacionResponse getById(UUID id) {
-        return restTemplate.getForObject(baseUrl + "/publicaciones/" + id, PublicacionResponse.class);
+        return restClient.get()
+                .uri("/publicaciones/{id}", id)
+                .retrieve()
+                .body(PublicacionResponse.class);
     }
 
     public PublicacionResponse create(PublicacionRequest request) {
-        return restTemplate.postForObject(baseUrl + "/publicaciones", request, PublicacionResponse.class);
+        return restClient.post()
+                .uri("/publicaciones")
+                .body(request)
+                .retrieve()
+                .body(PublicacionResponse.class);
     }
 
     public PublicacionResponse update(UUID id, PublicacionRequest request) {
-        return restTemplate.exchange(
-                baseUrl + "/publicaciones/" + id,
-                HttpMethod.PUT,
-                new HttpEntity<>(request),
-                PublicacionResponse.class
-        ).getBody();
+        return restClient.put()
+                .uri("/publicaciones/{id}", id)
+                .body(request)
+                .retrieve()
+                .body(PublicacionResponse.class);
     }
 
     public void delete(UUID id) {
-        restTemplate.delete(baseUrl + "/publicaciones/" + id);
+        restClient.delete()
+                .uri("/publicaciones/{id}", id)
+                .retrieve()
+                .toBodilessEntity();
     }
 }

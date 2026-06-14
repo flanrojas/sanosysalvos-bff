@@ -1,119 +1,80 @@
 package com.sanosysalvos.bff.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.sanosysalvos.bff.dto.ReporteCompletoDTO;
-import java.util.Map;
+import com.sanosysalvos.bff.client.MascotasClient;
+import com.sanosysalvos.bff.client.PublicacionClient;
+import com.sanosysalvos.bff.dto.request.MascotaRequest;
+import com.sanosysalvos.bff.dto.request.PublicacionRequest;
+import com.sanosysalvos.bff.dto.request.ReporteCompletoRequest;
+import com.sanosysalvos.bff.dto.response.MascotaResponse;
+import com.sanosysalvos.bff.dto.response.PublicacionResponse;
+import com.sanosysalvos.bff.dto.response.ReporteCompletoResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-class OrquestadorServiceTest {
+import java.time.LocalDateTime;
+import java.util.UUID;
 
-    private static final String PUBLICACION_ID = "8f937f90-c8f5-4e1c-8be2-2df23b24bd6a";
-    private static final String MASCOTA_ID = "550e8400-e29b-41d4-a716-446655440000";
-    private static final String PUBLICACION_BASE_URL = "http://localhost:8080";
-    private static final String MASCOTAS_BASE_URL = "http://localhost:8090";
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-    private RestTemplate restTemplate;
+@ExtendWith(MockitoExtension.class)
+public class OrquestadorServiceTest {
+
+    @Mock
+    private MascotasClient mascotasClient;
+
+    @Mock
+    private PublicacionClient publicacionClient;
+
+    @InjectMocks
     private OrquestadorService orquestadorService;
+
+    private ReporteCompletoRequest requestMock;
+    private MascotaResponse mascotaResponseMock;
+    private PublicacionResponse publicacionResponseMock;
+
+    private final UUID usuarioId = UUID.randomUUID();
+    private final UUID mascotaId = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        restTemplate = mock(RestTemplate.class);
-        orquestadorService = new OrquestadorService(restTemplate, PUBLICACION_BASE_URL, MASCOTAS_BASE_URL);
+        requestMock = new ReporteCompletoRequest(
+                "Perrito perdido", "Firulais", "Perro", "Café", 15.0,
+                "perdido", "Plaza Italia", "2026-06-11", "Tiene collar azul",
+                "Juan Pérez", "12345678", usuarioId.toString(), -33.4, -70.6
+        );
+
+        mascotaResponseMock = new MascotaResponse(
+                mascotaId, "Firulais", "LOST", "Perro", "Café", 15.0,
+                null, null, null, usuarioId, LocalDateTime.now()
+        );
+
+        publicacionResponseMock = new PublicacionResponse(
+                UUID.randomUUID(), "PERDIDA", "Perrito perdido", "Tiene collar azul",
+                LocalDateTime.now(), "2026-06-11", "ACTIVA", -33.4, -70.6,
+                "Plaza Italia", null, "Juan Pérez", "12345678", null,
+                mascotaId, usuarioId
+        );
     }
 
     @Test
-    void crearReporteCompleto_MakesTwoPostRequestsAndReturnsUnifiedMap() {
-        ReporteCompletoDTO dto = new ReporteCompletoDTO();
-        dto.nombre = "Luna";
-        dto.estado = "perdido";
-        dto.usuarioId = "user-123";
+    void crearReporteCompleto_Exito() {
+        when(mascotasClient.create(any(MascotaRequest.class))).thenReturn(mascotaResponseMock);
+        when(publicacionClient.create(any(PublicacionRequest.class))).thenReturn(publicacionResponseMock);
 
-        Map<String, Object> mascotaResponse = Map.of("id", MASCOTA_ID);
-        Map<String, Object> publicacionResponse = Map.of("idPublicacion", PUBLICACION_ID);
+        ReporteCompletoResponse resultado = orquestadorService.crearReporteCompleto(requestMock);
 
-        when(restTemplate.postForEntity(eq(MASCOTAS_BASE_URL + "/api/v1/pets"), any(Map.class), eq(Map.class)))
-                .thenReturn(new ResponseEntity<>(mascotaResponse, HttpStatus.CREATED));
+        assertNotNull(resultado);
+        assertEquals("Reporte creado y orquestado con éxito", resultado.mensaje());
+        assertEquals(mascotaId, resultado.mascota().id());
+        assertEquals("PERDIDA", resultado.publicacion().tipoPublicacion());
 
-        when(restTemplate.postForEntity(eq(PUBLICACION_BASE_URL + "/publicaciones"), any(Map.class), eq(Map.class)))
-                .thenReturn(new ResponseEntity<>(publicacionResponse, HttpStatus.CREATED));
-
-        Map<String, Object> result = orquestadorService.crearReporteCompleto(dto);
-
-        assertNotNull(result);
-        assertEquals("Reporte creado y orquestado con éxito", result.get("mensaje"));
-        assertEquals(mascotaResponse, result.get("mascota"));
-        assertEquals(publicacionResponse, result.get("publicacion"));
-
-        verify(restTemplate).postForEntity(eq(MASCOTAS_BASE_URL + "/api/v1/pets"), any(Map.class), eq(Map.class));
-        verify(restTemplate).postForEntity(eq(PUBLICACION_BASE_URL + "/publicaciones"), any(Map.class), eq(Map.class));
-    }
-
-    @Test
-    void getPublicacionDetallada_MakesTwoGetRequestsAndReturnsUnifiedResponse() {
-        Map<String, Object> publicacionMock = Map.of("idPublicacion", PUBLICACION_ID, "mascotaId", MASCOTA_ID);
-        Map<String, Object> mascotaMock = Map.of("name", "Luna", "species", "Perro");
-
-        when(restTemplate.exchange(
-                eq(PUBLICACION_BASE_URL + "/publicaciones/" + PUBLICACION_ID),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                any(ParameterizedTypeReference.class)))
-                .thenReturn(ResponseEntity.ok(publicacionMock));
-
-        when(restTemplate.exchange(
-                eq(MASCOTAS_BASE_URL + "/api/v1/pets/" + MASCOTA_ID),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                any(ParameterizedTypeReference.class)))
-                .thenReturn(ResponseEntity.ok(mascotaMock));
-
-        ResponseEntity<Map<String, Object>> response = orquestadorService.getPublicacionDetallada(PUBLICACION_ID);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(publicacionMock, response.getBody().get("publicacion"));
-        assertEquals(mascotaMock, response.getBody().get("mascota"));
-    }
-
-    @Test
-    void getPublicacionDetallada_WhenMascotaServiceFails_ReturnsPublicacionWithErrorInMascota() {
-        Map<String, Object> publicacionMock = Map.of("idPublicacion", PUBLICACION_ID, "mascotaId", MASCOTA_ID);
-
-        when(restTemplate.exchange(
-                eq(PUBLICACION_BASE_URL + "/publicaciones/" + PUBLICACION_ID),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                any(ParameterizedTypeReference.class)))
-                .thenReturn(ResponseEntity.ok(publicacionMock));
-
-        when(restTemplate.exchange(
-                eq(MASCOTAS_BASE_URL + "/api/v1/pets/" + MASCOTA_ID),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                any(ParameterizedTypeReference.class)))
-                .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
-
-        ResponseEntity<Map<String, Object>> response = orquestadorService.getPublicacionDetallada(PUBLICACION_ID);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-
-        Map<String, Object> mascotaRecibida = (Map<String, Object>) response.getBody().get("mascota");
-        assertEquals("Mascota no encontrada o inaccesible", mascotaRecibida.get("error"));
+        verify(mascotasClient, times(1)).create(any(MascotaRequest.class));
+        verify(publicacionClient, times(1)).create(any(PublicacionRequest.class));
     }
 }
