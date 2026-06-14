@@ -1,8 +1,6 @@
 package com.sanosysalvos.bff.service;
-
 import com.sanosysalvos.bff.client.MascotasClient;
 import com.sanosysalvos.bff.client.PublicacionClient;
-import com.sanosysalvos.bff.dto.ReporteCompletoDTO;
 import com.sanosysalvos.bff.dto.request.MascotaRequest;
 import com.sanosysalvos.bff.dto.request.PublicacionRequest;
 import com.sanosysalvos.bff.dto.request.ReporteCompletoRequest;
