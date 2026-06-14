@@ -17,10 +17,10 @@ public class MascotasClient {
     private final RestClient restClient;
 
     public MascotasClient(
-            RestClient.Builder builder,
+            RestClient restClientGlobal,
             @Value("${ms.mascotas.base-url}") String baseUrl) {
 
-        this.restClient = builder
+        this.restClient = restClientGlobal.mutate()
                 .baseUrl(baseUrl)
                 .build();
     }

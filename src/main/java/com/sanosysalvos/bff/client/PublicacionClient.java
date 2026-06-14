@@ -16,10 +16,10 @@ public class PublicacionClient {
     private final RestClient restClient;
 
     public PublicacionClient(
-            RestClient.Builder builder,
+            RestClient restClientGlobal,
             @Value("${ms.publicacion.base-url}") String baseUrl) {
 
-        this.restClient = builder
+        this.restClient = restClientGlobal.mutate()
                 .baseUrl(baseUrl)
                 .build();
     }
