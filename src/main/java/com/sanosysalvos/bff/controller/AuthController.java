@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/bff/auth")
+@RequestMapping("bff/auth")
 @Tag(name = "Autenticación", description = "Endpoints públicos de acceso (No requieren Token)")
 public class AuthController {
 

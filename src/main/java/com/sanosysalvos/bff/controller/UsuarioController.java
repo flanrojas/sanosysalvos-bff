@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("bff/usuarios")
 @Tag(name = "Gestión de Usuarios", description = "Operaciones de perfil de usuario y administración delegadas al MS de Usuarios")
 public class UsuarioController {
 

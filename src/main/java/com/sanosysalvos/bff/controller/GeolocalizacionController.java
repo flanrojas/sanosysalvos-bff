@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/bff/geolocalizacion")
+@RequestMapping("bff/geolocalizacion")
 @Tag(name = "Geolocalización Políglota", description = "Endpoints que exponen la lógica GIS del microservicio en Python")
 public class GeolocalizacionController {
 
