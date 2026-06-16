@@ -9,13 +9,14 @@ import org.springframework.web.client.RestClient;
 public class RestClientConfig {
 
     @Bean
-    public RestClient restClient() {
+    public RestClient restClient(JwtForwardingInterceptor jwtInterceptor) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(5000);
         factory.setReadTimeout(5000);
 
         return RestClient.builder()
                 .requestFactory(factory)
+                .requestInterceptor(jwtInterceptor)
                 .build();
     }
 }

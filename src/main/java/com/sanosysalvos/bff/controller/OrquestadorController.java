@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/bff/orquestador")
+@RequestMapping("bff/orquestador")
 @Tag(name = "Orquestador", description = "Endpoints compuestos que integran múltiples microservicios (API Composition)")
 public class OrquestadorController {
 

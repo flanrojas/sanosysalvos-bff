@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/ms-mascotas")
+@RequestMapping("bff/ms-mascotas")
 @Tag(name = "Mascotas", description = "CRUD para gestionar mascotas desde el BFF")
 public class MascotasController {
 

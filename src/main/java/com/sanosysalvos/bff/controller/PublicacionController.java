@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/ms-publicacion")
+@RequestMapping("bff/ms-publicacion")
 @Tag(name = "Publicaciones", description = "CRUD para gestionar publicaciones de mascotas")
 public class PublicacionController {
 
