@@ -8,6 +8,7 @@ class BffApplicationTests {
 
 	@Test
 	void contextLoads() {
+		BffApplication.main(new String[]{});
 	}
 
 }
