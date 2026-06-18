@@ -12,18 +12,10 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
     @Bean
-    GroupedOpenApi publicacionApi() {
+    GroupedOpenApi bffApi() {
         return GroupedOpenApi.builder()
-                .group("ms-publicacion")
-                .pathsToMatch("/ms-publicacion/**")
-                .build();
-    }
-
-    @Bean
-    GroupedOpenApi mascotasApi() {
-        return GroupedOpenApi.builder()
-                .group("ms-mascotas")
-                .pathsToMatch("/ms-mascotas/**")
+                .group("bff-completo")
+                .pathsToMatch("/bff/**")
                 .build();
     }
 
@@ -31,12 +23,12 @@ public class OpenApiConfig {
     OpenAPI bffOpenApi() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("BFF Sanos y Salvos API")
-                        .description("BFF REST para consumir los microservicios de publicaciones y mascotas")
+                        .title("API Gateway - Sanos y Salvos")
+                        .description("BFF REST para orquestar los microservicios Políglotas (Mascotas, Publicaciones, Usuarios y Geolocalización)")
                         .version("1.0.0")
-                        .contact(new Contact().name("Sanos y Salvos")))
+                        .contact(new Contact().name("Equipo Sanos y Salvos")))
                 .addServersItem(new Server()
-                        .url("http://localhost:8080")
-                        .description("BFF server url"));
+                        .url("http://localhost:8085")
+                        .description("BFF Server Local"));
     }
 }
