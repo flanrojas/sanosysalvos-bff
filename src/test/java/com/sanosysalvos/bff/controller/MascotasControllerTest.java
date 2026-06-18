@@ -56,7 +56,7 @@ class MascotasControllerTest {
         when(mascotasClient.getAll(null, null))
                 .thenReturn(mascotas);
 
-        mockMvc.perform(get("/ms-mascotas/pets"))
+        mockMvc.perform(get("/bff/ms-mascotas/pets"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].name").value("Fido"))
@@ -85,7 +85,7 @@ class MascotasControllerTest {
         when(mascotasClient.getById(id))
                 .thenReturn(mascota);
 
-        mockMvc.perform(get("/ms-mascotas/pets/{id}", id))
+        mockMvc.perform(get("/bff/ms-mascotas/pets/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(id.toString()))
@@ -125,7 +125,7 @@ class MascotasControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(
-                        post("/ms-mascotas/pets")
+                        post("/bff/ms-mascotas/pets")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -142,7 +142,7 @@ class MascotasControllerTest {
 
         doNothing().when(mascotasClient).delete(id);
 
-        mockMvc.perform(delete("/ms-mascotas/pets/{id}", id))
+        mockMvc.perform(delete("/bff/ms-mascotas/pets/{id}", id))
                 .andExpect(status().isNoContent());
     }
 }
