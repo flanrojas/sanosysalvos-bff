@@ -64,7 +64,7 @@ class PublicacionControllerTest {
         when(publicacionClient.getAll())
                 .thenReturn(publicaciones);
 
-        mockMvc.perform(get("/ms-publicacion/publicaciones"))
+        mockMvc.perform(get("/bff/ms-publicacion/publicaciones"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].titulo").value("Perrito perdido"))
@@ -98,7 +98,7 @@ class PublicacionControllerTest {
         when(publicacionClient.getById(id))
                 .thenReturn(response);
 
-        mockMvc.perform(get("/ms-publicacion/publicaciones/{id}", id))
+        mockMvc.perform(get("/bff/ms-publicacion/publicaciones/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.idPublicacion").value(id.toString()))
@@ -152,7 +152,7 @@ class PublicacionControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(
-                        post("/ms-publicacion/publicaciones")
+                        post("/bff/ms-publicacion/publicaciones")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -207,7 +207,7 @@ class PublicacionControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(
-                        put("/ms-publicacion/publicaciones/{id}", id)
+                        put("/bff/ms-publicacion/publicaciones/{id}", id)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -223,7 +223,7 @@ class PublicacionControllerTest {
 
         doNothing().when(publicacionClient).delete(id);
 
-        mockMvc.perform(delete("/ms-publicacion/publicaciones/{id}", id))
+        mockMvc.perform(delete("/bff/ms-publicacion/publicaciones/{id}", id))
                 .andExpect(status().isNoContent());
     }
 }
