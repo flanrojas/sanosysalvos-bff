@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/bff/ms-publicacion/publicaciones/**").permitAll()
                         .requestMatchers(
                                 "/bff/auth/ingreso",
                                 "/bff/auth/registro",
